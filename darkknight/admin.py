@@ -5,6 +5,9 @@ from django.shortcuts import redirect
 from darkknight.models import CertificateSigningRequest
 
 class CertificateSigningRequestAdmin(admin.ModelAdmin):
+    list_display = ['__unicode__', 'domain']
+    list_filter = ['domain']
+    search_fields = ['domain']
 
     def has_add_permission(self, request):
         return False

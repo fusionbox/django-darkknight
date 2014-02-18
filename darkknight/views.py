@@ -4,6 +4,7 @@ from django.views.generic.base import View
 from django.views.generic.detail import DetailView, SingleObjectMixin
 from django.views.generic.edit import FormView
 from django.http import Http404, HttpResponse
+from django.utils.text import slugify
 
 from OpenSSL import crypto
 from darkknight.forms import GenerateForm
@@ -85,7 +86,7 @@ class DownloadView(KeyMixin, SingleObjectMixin, View):
 
         if 'download' in request.GET:
             content_disposition = 'attachement; filename="{}"'.format(
-                '%s.csr' % self.object._csr_commonname)
+                '%s.csr' % slugify(self.object._csr_commonname))
             response['Content-Disposition'] = content_disposition
         elif 'view' not in request.GET:
             raise Http404

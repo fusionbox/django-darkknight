@@ -1,0 +1,37 @@
+<ul>
+  <li><a href="{% url 'darkknight.views.download' signed_pk %}?download">Download the CSR</a></li>
+  <li><a href="{% url 'darkknight.views.download' signed_pk %}?view">View the CSR</a></li>
+</ul>
+
+<dl>
+
+  <dt>Key
+  <dd><tt>{{ object.key }}</tt>
+
+  <dt><tt>scp</tt> command
+  <dd><tt>scp {{ request.get_host }}:{{ object.key }} .</tt>
+
+  <dt>Country Name
+  <dd>{{ csr.countryName }}
+
+  <dt>State or Province
+  <dd>{{ csr.stateOrProvinceName }}
+
+  <dt>Locality Name
+  <dd>{{ csr.localityName }}
+
+  <dt>Organization Name
+  <dd>{{ csr.organizationName }}
+
+  {% if csr.organizationalUnitName %}
+    <dt>Organizational Unit
+    <dd>{{ csr.organizationalUnitName }}
+  {% endif %}
+
+  <dt>Common Name
+  <dd>{{ csr.commonName }}
+
+  <dt>Email Address
+  <dd>{{ csr.emailAddress }}
+
+</dl>

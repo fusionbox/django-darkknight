@@ -1,0 +1,40 @@
+# Compiled filed
+__pycache__/
+*.py[cod]
+*.so
+/dist/
+
+# Packaging
+*.egg-info/
+*.egg
+
+# Tests
+.tox/
+
+# Translations
+*.mo
+*.pot
+
+# Documentation
+/docs/_build/
+
+# Editor files
+*~
+*.bak
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+.netrwhist
+
+# OS Files
+Desktop.ini
+Thumbs.db
+ehthumbs.db
+$RECYCLE.BIN/
+._*
+.DS_Store
+.Trashes
+
+# Project files
+/.env
+/db.sqlite3

@@ -7,7 +7,7 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 
 from OpenSSL import crypto
-from darkknight.models import Key
+from darkknight.models import CertificateSigningRequest
 
 KEY_SIZE = 2048
 
@@ -84,5 +84,6 @@ class GenerateForm(forms.Form):
         with open(csrfname, 'w') as f:
             f.write(csr)
 
-        res = Key.objects.create(key=keyfname, csr=csrfname, _csr_commonname=cn)
+        res = CertificateSigningRequest.objects.create(
+            key=keyfname, csr=csrfname, domain=cn)
         return res

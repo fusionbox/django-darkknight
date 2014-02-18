@@ -1,4 +1,4 @@
-from django.core.signing import Signer, BadSignature
+from django.core.signing import BadSignature
 from django.core.urlresolvers import reverse
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView, SingleObjectMixin
@@ -8,10 +8,7 @@ from django.utils.text import slugify
 
 from OpenSSL import crypto
 from darkknight.forms import GenerateForm
-from darkknight.models import Key
-
-
-pk_signer = Signer('CSR PK')
+from darkknight.models import CertificateSigningRequest, pk_signer
 
 
 class GenerateView(FormView):
@@ -22,7 +19,7 @@ class GenerateView(FormView):
         assert hasattr(self, 'instance')
         return reverse(
             detail,
-            kwargs=dict(signed_pk=pk_signer.sign(self.instance.pk)),
+            kwargs=dict(signed_pk=self.instance.signed_pk),
         )
 
     def form_valid(self, form):
@@ -30,8 +27,8 @@ class GenerateView(FormView):
         return super(GenerateView, self).form_valid(form)
 
 
-class KeyMixin(object):
-    model = Key
+class CertificateSingingRequestMixin(object):
+    model = CertificateSigningRequest
 
     def get_object(self, queryset=None):
         if hasattr(self, 'object'):
@@ -53,7 +50,7 @@ class KeyMixin(object):
         return self.object
 
 
-class DetailView(KeyMixin, DetailView):
+class DetailView(CertificateSingingRequestMixin, DetailView):
     template_name = 'darkknight/detail.html'
 
     def get_context_data(self, **kwargs):
@@ -73,7 +70,7 @@ class DetailView(KeyMixin, DetailView):
 
 
 
-class DownloadView(KeyMixin, SingleObjectMixin, View):
+class DownloadView(CertificateSingingRequestMixin, SingleObjectMixin, View):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
@@ -86,7 +83,7 @@ class DownloadView(KeyMixin, SingleObjectMixin, View):
 
         if 'download' in request.GET:
             content_disposition = 'attachement; filename="{}"'.format(
-                '%s.csr' % slugify(self.object._csr_commonname))
+                '%s.csr' % slugify(self.object.domain))
             response['Content-Disposition'] = content_disposition
         elif 'view' not in request.GET:
             raise Http404

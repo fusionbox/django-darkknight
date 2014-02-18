@@ -1,6 +1,6 @@
 <ul>
-  <li><a href="{% url 'darkknight.views.download' signed_pk %}?download">Download the CSR</a></li>
-  <li><a href="{% url 'darkknight.views.download' signed_pk %}?view">View the CSR</a></li>
+  <li><a href="{% url 'darkknight.views.download' object.signed_pk %}?download">Download the CSR</a></li>
+  <li><a href="{% url 'darkknight.views.download' object.signed_pk %}?view">View the CSR</a></li>
 </ul>
 
 <dl>

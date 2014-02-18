@@ -73,7 +73,7 @@ class DetailView(KeyMixin, DetailView):
 
 
 class DownloadView(KeyMixin, SingleObjectMixin, View):
-    http_methods_name = ['get']
+    http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()

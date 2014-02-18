@@ -10,6 +10,7 @@ from OpenSSL import crypto
 from darkknight.models import CertificateSigningRequest
 
 KEY_SIZE = 2048
+WWW = 'www.'
 
 
 class GenerateForm(forms.Form):
@@ -70,6 +71,10 @@ class GenerateForm(forms.Form):
 
         name = uuid.uuid4().hex
         cn = self.cleaned_data['commonName']
+
+        # Strip www. from the common name
+        if cn.startswith(WWW):
+            cn = cn[len(WWW):]
 
         key = crypto.dump_privatekey(crypto.FILETYPE_PEM, pkey)
         csr = crypto.dump_certificate_request(crypto.FILETYPE_PEM, req)

@@ -20,34 +20,28 @@ class GenerateForm(forms.Form):
         help_text=_("Two letters code"),
     )
     stateOrProvinceName = forms.CharField(
-        max_length=255,
         label=_("State or province name"),
         help_text=_("Enter its full name"),
     )
     localityName = forms.CharField(
-        max_length=255,
         label=_("Locality name"),
         help_text=_("eg, city name"),
     )
     organizationName = forms.CharField(
-        max_length=255,
         label=_("Organisation Name"),
         help_text=_("eg, company name"),
     )
     organizationalUnitName = forms.CharField(
-        max_length=255,
         label=_("Organisation Unit"),
         help_text=_("Section, Department, ... eg, IT Departement"),
         required=False,
     )
     commonName = forms.CharField(
-        max_length=255,
         label=_("Common Name"),
         help_text=_("Domain name, including 'www.' if applicable. "
                     "eg, www.example.com")
     )
     emailAddress = forms.EmailField(
-        max_length=255,
         label=_("Email address"),
     )
 

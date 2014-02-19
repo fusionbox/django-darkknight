@@ -27,7 +27,7 @@ class GenerateView(FormView):
         return super(GenerateView, self).form_valid(form)
 
 
-class CertificateSingingRequestMixin(object):
+class CertificateSigingRequestMixin(object):
     model = CertificateSigningRequest
 
     def get_object(self, queryset=None):
@@ -50,7 +50,7 @@ class CertificateSingingRequestMixin(object):
         return self.object
 
 
-class DetailView(CertificateSingingRequestMixin, DetailView):
+class DetailView(CertificateSigingRequestMixin, DetailView):
     template_name = 'darkknight/detail.html'
 
     def get_context_data(self, **kwargs):
@@ -70,7 +70,7 @@ class DetailView(CertificateSingingRequestMixin, DetailView):
 
 
 
-class DownloadView(CertificateSingingRequestMixin, SingleObjectMixin, View):
+class DownloadView(CertificateSigingRequestMixin, SingleObjectMixin, View):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):

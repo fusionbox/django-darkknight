@@ -1,37 +1,38 @@
+{% load i18n %}
 <ul>
-  <li><a href="{% url 'darkknight.views.download' object.signed_pk %}?download">Download the CSR</a></li>
-  <li><a href="{% url 'darkknight.views.download' object.signed_pk %}?view">View the CSR</a></li>
+  <li><a href="{% url 'darkknight.views.download' object.signed_pk %}?download">{% trans "Download the CSR" %}</a></li>
+  <li><a href="{% url 'darkknight.views.download' object.signed_pk %}?view">{% trans "View the CSR" %}</a></li>
 </ul>
 
 <dl>
 
-  <dt>Key
+  <dt>{% trans "Key" %}
   <dd><tt>{{ object.key }}</tt>
 
-  <dt><tt>scp</tt> command
+  <dt>{% blocktrans %}<tt>scp</tt> command{% endblocktrans %}
   <dd><tt>scp {{ request.get_host }}:{{ object.key }} .</tt>
 
-  <dt>Country Name
+  <dt>{% trans "Country Name" %}
   <dd>{{ csr.countryName }}
 
-  <dt>State or Province
+  <dt>{% trans "State or Province" %}
   <dd>{{ csr.stateOrProvinceName }}
 
-  <dt>Locality Name
+  <dt>{% trans "Locality Name" %}
   <dd>{{ csr.localityName }}
 
-  <dt>Organization Name
+  <dt>{% trans "Organization Name" %}
   <dd>{{ csr.organizationName }}
 
   {% if csr.organizationalUnitName %}
-    <dt>Organizational Unit
+    <dt>{% trans "Organizational Unit" %}
     <dd>{{ csr.organizationalUnitName }}
   {% endif %}
 
-  <dt>Common Name
+  <dt>{% trans "Common Name" %}
   <dd>{{ csr.commonName }}
 
-  <dt>Email Address
+  <dt>{% trans "Email Address" %}
   <dd>{{ csr.emailAddress }}
 
 </dl>

@@ -43,6 +43,7 @@ class GenerateForm(forms.Form):
     )
     emailAddress = forms.EmailField(
         label=_("Email address"),
+        required=False,
     )
 
     def clean_countryName(self):

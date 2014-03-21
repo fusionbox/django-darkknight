@@ -89,3 +89,71 @@ class GenerateForm(forms.Form):
         res = CertificateSigningRequest.objects.create(
             key=keyfname, csr=csrfname, domain=cn)
         return res
+
+
+class UploadCertificateForm(forms.Form):
+    certificate_file = forms.FileField(
+        required=False,
+    )
+    certificate_content = forms.CharField(
+        widget=forms.Textarea,
+        required=False
+    )
+
+    def clean(self):
+        cleaned_data = super(UploadCertificateForm, self).clean()
+
+        fields = ('certificate_file', 'certificate_content', )
+        if not any(cleaned_data[f] for f in fields):
+            raise forms.ValidationError(_("Please upload a certificate or "
+                                          "copy its content."))
+
+        if cleaned_data['certificate_file']:
+            certificate = self.clean_certificate(
+                self.cleaned_data['certificate_file'].read())
+        else:
+            assert cleaned_data['certificate_content']
+            certificate = self.clean_certificate(
+                self.cleaned_data['certificate_content'])
+
+        return dict(certificate=certificate)
+
+    def clean_certificate(self, content):
+        if 'CERTIFICATE REQUEST' in content:
+            raise forms.ValidationError(
+                _("You should upload a certificate, not a certificate request."
+                  " This is the file given to you by your certificate "
+                  "authority.")
+            )
+        elif 'PKCS #7' in content:
+            return self.load_pkcs7(content)
+        elif 'CERTIFICATE' in content:
+            return self.load_cert(content)
+        else:
+            raise forms.ValidationError(
+                _("Unknown certificate type. If this certificate was given by "
+                  "your Certificate Authority. Please contact the "
+                  "administrator of this website.")
+            )
+
+    def load_cert(self, content):
+        try:
+            cert = crypto.load_certificate(crypto.FILETYPE_PEM, content)
+            assert False
+        except crypto.Error:
+            raise forms.ValidationError(
+                _("The Apache certificate format has been recognized. But we "
+                  "weren't able to read it. Please double check your "
+                  "certificate.")
+            )
+
+    def load_pkcs7(self, content):
+        try:
+            pkcs7 = crypto.load_pkcs7_data(crypto.FILETYPE_PEM, content)
+            assert False
+        except crypto.Error:
+            raise forms.ValidationError(
+                _("The IIS certificate format has been recognized. But we "
+                  "weren't able to read it. Please double check your "
+                  "certificate.")
+            )

@@ -4,4 +4,5 @@ urlpatterns = patterns('darkknight.views',
     url(r'^$', 'generate'),
     url(r'^detail/(?P<signed_pk>[^/]+)/$', 'detail'),
     url(r'^download/(?P<signed_pk>[^/]+)/$', 'download'),
+    url(r'^upload-certificate/(?P<signed_pk>[^/]+)/$', 'upload_certificate'),
 )

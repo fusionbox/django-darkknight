@@ -1,0 +1,7 @@
+{% load i18n %}
+<p>{% blocktrans %}Upload the certificate, or copy and paste the content above.{% endblocktrans %}</p>
+<form action="{% url "darkknight.views.upload_certificate" view.kwargs.signed_pk %}" method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <p><button type="submit">Submit</button></p>
+</form>

@@ -7,7 +7,7 @@ from django.http import Http404, HttpResponse
 from django.utils.text import slugify
 
 from OpenSSL import crypto
-from darkknight.forms import GenerateForm
+from darkknight.forms import GenerateForm, UploadCertificateForm
 from darkknight.models import CertificateSigningRequest, pk_signer
 
 
@@ -66,6 +66,8 @@ class DetailView(CertificateSigningRequestMixin, DetailView):
         req = crypto.load_certificate_request(crypto.FILETYPE_PEM, csr)
         context['csr'] = req.get_subject()
 
+        context['form'] = UploadCertificateForm()
+
         return context
 
 
@@ -91,6 +93,21 @@ class DownloadView(CertificateSigningRequestMixin, SingleObjectMixin, View):
         return response
 
 
+class UploadCertificateView(CertificateSigningRequestMixin, FormView):
+    template_name = 'darkknight/upload_certificate.html'
+    form_class = UploadCertificateForm
+
+    def get_success_url(self, **kwargs):
+        assert 'signed_pk' in self.kwargs
+        return reverse(detail, kwargs=dict(signed_pk=self.kwargs['signed_pk']))
+
+    def form_valid(self, form):
+        certificate = form.cleaned_data['certificate']
+        assert False
+
+
+
 generate = GenerateView.as_view()
 detail = DetailView.as_view()
 download = DownloadView.as_view()
+upload_certificate = UploadCertificateView.as_view()

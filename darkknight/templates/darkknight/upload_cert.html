@@ -1,0 +1,6 @@
+<p>Upload a file or copy the content of the CSR:</p>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <p><button type="submit">Upload the certificate</button></p>
+</form>

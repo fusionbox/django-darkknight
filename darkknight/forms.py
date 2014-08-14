@@ -45,12 +45,24 @@ class GenerateForm(forms.Form):
         label=_("Email address"),
         required=False,
     )
+    subjectAlternativeNames = forms.CharField(
+        label=_('Subject Alternative Names (SAN)'),
+        required=False,
+        help_text=_('Please put one domain name per line'),
+        widget=forms.Textarea,
+    )
 
     def clean_countryName(self):
         country = self.cleaned_data['countryName']
         if not re.match('^[a-z]{2}$', country, flags=re.IGNORECASE):
             raise forms.ValidationError(_("Please enter a two-letters code"))
         return country.upper()
+
+    def clean_subjectAlternativeNames(self):
+        sans = list(filter(bool, (
+            domain.strip() for domain in self.cleaned_data['subjectAlternativeNames'].splitlines()
+        )))
+        return sans
 
     def generate(self):
         pkey = crypto.PKey()
@@ -62,7 +74,15 @@ class GenerateForm(forms.Form):
         subject = req.get_subject()
         for attr, value in self.cleaned_data.items():
             if value:
-                setattr(subject, attr, value)
+                if attr == 'subjectAlternativeNames':
+                    req.add_extensions([
+                        crypto.X509Extension('subjectAltName', False, ", ".join(
+                            "DNS.{i}:{domain}".format(i=i, domain=domain)
+                            for i, domain in enumerate(value)
+                        ))
+                    ])
+                else:
+                    setattr(subject, attr, value)
 
         name = uuid.uuid4().hex
         cn = self.cleaned_data['commonName']

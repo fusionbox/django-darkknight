@@ -9,7 +9,7 @@ def read(fname):
 setup(name='django-darkknight',
       version='0.9.0',
       license="BSD",
-      description="He's a silent gardian, a watchful protector",
+      description="He's a silent guardian, a watchful protector",
       long_description=read('README.rst'),
 
       author="Fusionbox, Inc",

@@ -9,6 +9,7 @@ pk_signer = Signer('CSR PK')
 @python_2_unicode_compatible
 class CertificateSigningRequest(models.Model):
     domain = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
     key = models.FilePathField(settings.DARKKNIGHT_STORAGE, match="*.key")
     csr = models.FilePathField(settings.DARKKNIGHT_STORAGE, match="*.csr")
 

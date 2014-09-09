@@ -91,7 +91,7 @@ class GenerateForm(forms.Form):
         if cn.startswith(WWW):
             cn = cn[len(WWW):]
 
-        req.sign(pkey, "sha1")
+        req.sign(pkey, "sha256")
 
         key = crypto.dump_privatekey(crypto.FILETYPE_PEM, pkey)
         csr = crypto.dump_certificate_request(crypto.FILETYPE_PEM, req)

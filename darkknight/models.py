@@ -10,13 +10,19 @@ from OpenSSL import crypto
 
 pk_signer = Signer('CSR PK')
 
+def generate_uuid4():
+    """
+    Used in darkknight/migrations/0004_auto_20141016_1544.py
+    """
+    return uuid.uuid4().hex
+
 
 @python_2_unicode_compatible
 class CertificateSigningRequest(models.Model):
     # for search over the domain
     domain = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
-    uuid = models.CharField(max_length=32, unique=True, default=lambda: uuid.uuid4().hex)
+    uuid = models.CharField(max_length=32, unique=True, default=generate_uuid4)
 
     def __str__(self):
         return 'Certificate for %s' % self.domain

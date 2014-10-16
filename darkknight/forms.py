@@ -4,6 +4,7 @@ import os
 from django import forms
 from django.utils.translation import ugettext as _
 from localflavor.us.us_states import US_STATES
+from django_countries import countries
 
 from OpenSSL import crypto
 from darkknight.models import CertificateSigningRequest
@@ -13,10 +14,10 @@ WWW = 'www.'
 
 
 class GenerateForm(forms.Form):
-    countryName = forms.CharField(
-        max_length=2,
+    countryName = forms.ChoiceField(
+        choices=countries,
         label=_("Country Name"),
-        help_text=_("Two-letter code"),
+        initial='US',
     )
     stateOrProvinceName = forms.CharField(
         label=_("State or province name"),

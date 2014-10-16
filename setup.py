@@ -23,6 +23,7 @@ setup(name='django-darkknight',
           'Django>=1.5',
           'pyOpenSSL',
           'django-localflavor',
+          'django-countries',
       ],
 
       classifiers=[

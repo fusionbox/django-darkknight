@@ -22,6 +22,7 @@ setup(name='django-darkknight',
           'django-dotenv',
           'Django>=1.5',
           'pyOpenSSL',
+          'django-localflavor',
       ],
 
       classifiers=[

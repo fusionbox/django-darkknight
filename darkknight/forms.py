@@ -3,6 +3,7 @@ import os
 
 from django import forms
 from django.utils.translation import ugettext as _
+from localflavor.us.us_states import US_STATES
 
 from OpenSSL import crypto
 from darkknight.models import CertificateSigningRequest
@@ -15,7 +16,7 @@ class GenerateForm(forms.Form):
     countryName = forms.CharField(
         max_length=2,
         label=_("Country Name"),
-        help_text=_("Two letters code"),
+        help_text=_("Two-letter code"),
     )
     stateOrProvinceName = forms.CharField(
         label=_("State or province name"),
@@ -61,6 +62,16 @@ class GenerateForm(forms.Form):
             domain.strip() for domain in self.cleaned_data['subjectAlternativeNames'].splitlines()
         )))
         return sans
+
+    def clean(self):
+        cd = super(GenerateForm, self).clean()
+        if cd.get('countryName') == 'US':
+            try:
+                if cd['stateOrProvinceName'] not in set(i[1] for i in US_STATES):
+                    self.add_error('stateOrProvinceName', 'State should be the full state name, eg "Colorado"')
+            except KeyError:
+                pass
+        return cd
 
     def generate(self):
         pkey = crypto.PKey()

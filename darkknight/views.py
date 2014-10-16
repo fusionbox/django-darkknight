@@ -3,10 +3,10 @@ from django.core.urlresolvers import reverse
 from django.views.generic.base import View
 from django.views.generic.detail import DetailView, SingleObjectMixin
 from django.views.generic.edit import FormView
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.utils.text import slugify
+from django.shortcuts import get_object_or_404
 
-from OpenSSL import crypto
 from darkknight.forms import GenerateForm
 from darkknight.models import CertificateSigningRequest, pk_signer
 
@@ -19,7 +19,7 @@ class GenerateView(FormView):
         assert hasattr(self, 'instance')
         return reverse(
             detail,
-            kwargs=dict(signed_pk=self.instance.signed_pk),
+            kwargs=dict(uuid=self.instance.uuid),
         )
 
     def form_valid(self, form):
@@ -27,27 +27,10 @@ class GenerateView(FormView):
         return super(GenerateView, self).form_valid(form)
 
 
-class CertificateSigningRequestMixin(object):
+class CertificateSigningRequestMixin(SingleObjectMixin):
     model = CertificateSigningRequest
-
-    def get_object(self, queryset=None):
-        if hasattr(self, 'object'):
-            return self.object
-
-        assert 'signed_pk' in self.kwargs
-        if queryset is None:
-            queryset = self.get_queryset()
-        try:
-            pk = pk_signer.unsign(self.kwargs['signed_pk'])
-        except BadSignature:
-            raise Http404
-
-        try:
-            self.object = queryset.get(pk=pk)
-        except self.model.DoesNotExist:
-            raise Http404
-
-        return self.object
+    slug_field = 'uuid'
+    slug_url_kwarg = 'uuid'
 
 
 class DetailView(CertificateSigningRequestMixin, DetailView):
@@ -55,19 +38,8 @@ class DetailView(CertificateSigningRequestMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
-
-        assert 'signed_pk' in self.kwargs
-        context['signed_pk'] = self.kwargs['signed_pk']
-
-        obj = context['object']
-        with open(obj.csr, 'r') as f:
-            csr = f.read()
-
-        req = crypto.load_certificate_request(crypto.FILETYPE_PEM, csr)
-        context['csr'] = req.get_subject()
-
+        context['csr'] = context['object'].get_csr_obj().get_subject()
         return context
-
 
 
 class DownloadView(CertificateSigningRequestMixin, SingleObjectMixin, View):
@@ -76,8 +48,7 @@ class DownloadView(CertificateSigningRequestMixin, SingleObjectMixin, View):
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
 
-        with open(self.object.csr, 'r') as f:
-            csr = f.read()
+        csr = self.object.get_csr_text()
 
         response = HttpResponse(csr, content_type='text/plain')
 
@@ -94,3 +65,24 @@ class DownloadView(CertificateSigningRequestMixin, SingleObjectMixin, View):
 generate = GenerateView.as_view()
 detail = DetailView.as_view()
 download = DownloadView.as_view()
+
+
+# Before putting the csr uuid in the url, we used a signed pk. These views
+# redirect the old urls to the new ones.
+def get_csr_from_signed_pk(signed_pk):
+    try:
+        pk = pk_signer.unsign(signed_pk)
+    except BadSignature:
+        raise Http404
+
+    return get_object_or_404(CertificateSigningRequest, pk=pk)
+
+
+def redirect_to_detail(request, signed_pk):
+    obj = get_csr_from_signed_pk(signed_pk)
+    return HttpResponseRedirect(reverse(detail, kwargs={'uuid': obj.uuid}))
+
+
+def redirect_to_download(request, signed_pk):
+    obj = get_csr_from_signed_pk(signed_pk)
+    return HttpResponseRedirect(reverse(download, kwargs={'uuid': obj.uuid}))

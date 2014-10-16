@@ -20,6 +20,6 @@ class CertificateSigningRequestAdmin(admin.ModelAdmin):
         except CertificateSigningRequest.DoesNotExist:
             raise Http404
 
-        return redirect('darkknight.views.detail', signed_pk=obj.signed_pk)
+        return redirect('darkknight.views.detail', uuid=obj.uuid)
 
 admin.site.register(CertificateSigningRequest, CertificateSigningRequestAdmin)

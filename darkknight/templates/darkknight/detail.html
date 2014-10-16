@@ -1,7 +1,7 @@
 {% load i18n %}
 <ul>
-  <li><a href="{% url 'darkknight.views.download' object.signed_pk %}?download">{% trans "Download the CSR" %}</a></li>
-  <li><a href="{% url 'darkknight.views.download' object.signed_pk %}?view">{% trans "View the CSR" %}</a></li>
+  <li><a href="{% url 'darkknight.views.download' object.uuid %}?download">{% trans "Download the CSR" %}</a></li>
+  <li><a href="{% url 'darkknight.views.download' object.uuid %}?view">{% trans "View the CSR" %}</a></li>
 </ul>
 
 <dl>
@@ -10,7 +10,7 @@
   <dd><tt>{{ object.key }}</tt>
 
   <dt>{% blocktrans %}<tt>scp</tt> command{% endblocktrans %}
-  <dd><tt>scp {{ request.get_host }}:{{ object.key }} .</tt>
+  <dd><tt>scp {{ request.get_host }}:{{ object.key_path }} .</tt>
 
   <dt>{% trans "Country Name" %}
   <dd>{{ csr.countryName }}

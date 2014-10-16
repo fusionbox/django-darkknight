@@ -1,10 +1,8 @@
 import re
-import uuid
 import os
 
 from django import forms
 from django.utils.translation import ugettext as _
-from django.conf import settings
 
 from OpenSSL import crypto
 from darkknight.models import CertificateSigningRequest
@@ -84,8 +82,9 @@ class GenerateForm(forms.Form):
                 else:
                     setattr(subject, attr, value)
 
-        name = uuid.uuid4().hex
         cn = self.cleaned_data['commonName']
+
+        csr_obj = CertificateSigningRequest.objects.create(domain=cn)
 
         # Strip www. from the common name
         if cn.startswith(WWW):
@@ -96,16 +95,11 @@ class GenerateForm(forms.Form):
         key = crypto.dump_privatekey(crypto.FILETYPE_PEM, pkey)
         csr = crypto.dump_certificate_request(crypto.FILETYPE_PEM, req)
 
-        keyfname = os.path.join(settings.DARKKNIGHT_STORAGE, '%s.key' % name)
-        csrfname = os.path.join(settings.DARKKNIGHT_STORAGE, '%s.csr' % name)
+        assert not os.path.exists(csr_obj.key_path)
 
-        assert not os.path.exists(keyfname)
-
-        with open(keyfname, 'w') as f:
+        with open(csr_obj.key_path, 'w') as f:
             f.write(key)
-        with open(csrfname, 'w') as f:
+        with open(csr_obj.csr_path, 'w') as f:
             f.write(csr)
 
-        res = CertificateSigningRequest.objects.create(
-            key=keyfname, csr=csrfname, domain=cn)
-        return res
+        return csr_obj

@@ -1,6 +1,9 @@
 {% load i18n %}
+{% load static %}
 <form method="post">
   {% csrf_token %}
   {{ form.as_p }}
   <p><button type="submit">{% trans "Generate" %}</button></p>
 </form>
+<script src="{% static 'js/darkknight/jquery.js' %}"></script>
+<script src="{% static 'js/darkknight/form.js' %}"></script>

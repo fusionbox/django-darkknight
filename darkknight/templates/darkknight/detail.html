@@ -10,7 +10,7 @@
   <dd><tt>{{ object.key }}</tt>
 
   <dt>{% blocktrans %}<tt>scp</tt> command{% endblocktrans %}
-  <dd><tt>ssh {{ request.get_host }} sudo cat {{ object.key_path }} | sudo tee <em>filename</em></tt>
+  <dd><tt>{% block command %}ssh {{ request.get_host }} sudo cat {{ object.key_path }} | sudo tee <em>filename</em>{% endblock %}</tt>
 
   <dt>{% trans "Country Name" %}
   <dd>{{ csr.countryName }}

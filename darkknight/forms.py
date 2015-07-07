@@ -13,6 +13,11 @@ KEY_SIZE = 2048
 WWW = 'www.'
 
 
+def creat(filename, mode):
+    fd = os.open(filename, os.O_CREAT | os.O_WRONLY | os.O_EXCL, mode)
+    return os.fdopen(fd, 'w')
+
+
 class GenerateForm(forms.Form):
     countryName = forms.ChoiceField(
         choices=countries,
@@ -109,9 +114,9 @@ class GenerateForm(forms.Form):
 
         assert not os.path.exists(csr_obj.key_path)
 
-        with open(csr_obj.key_path, 'w') as f:
+        with creat(csr_obj.key_path, 0000) as f:
             f.write(key)
-        with open(csr_obj.csr_path, 'w') as f:
+        with creat(csr_obj.csr_path, 0400) as f:
             f.write(csr)
 
         return csr_obj

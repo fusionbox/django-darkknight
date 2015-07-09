@@ -1,6 +1,29 @@
 {% load i18n %}
 <form method="post">
   {% csrf_token %}
-  {{ form.as_p }}
+  {% with form as formset %}
+
+    {{ formset.management_form }}
+
+    {% if formset.non_form_errors %}
+      {{ formset.non_form_errors }}
+    {% endif %}
+
+    {% for form in formset %}
+      <fieldset>
+        {{ form.as_p }}
+      </fieldset>
+    {% endfor %}
+
+  {% endwith %}
   <p><button type="submit">{% trans "Generate" %}</button></p>
+
+</form>
+
+<form method="get">
+  <label>
+    How many CSR do you want to generate with the same key?
+    <input type="number" name="n">
+  </label>
+  <p><button type="submit">{% trans "I want multiple CSRs!" %}</button></p>
 </form>

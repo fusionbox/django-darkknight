@@ -2,12 +2,14 @@ import re
 import os
 
 from django import forms
+from django.db import transaction
 from django.utils.translation import ugettext as _
+from django.forms.formsets import BaseFormSet
 from localflavor.us.us_states import US_STATES
 from django_countries import countries
 
 from OpenSSL import crypto
-from darkknight.models import CertificateSigningRequest
+from darkknight.models import CertificateSigningRequest, SSLKey
 
 KEY_SIZE = 2048
 WWW = 'www.'
@@ -79,15 +81,35 @@ class GenerateForm(forms.Form):
                 pass
         return cd
 
+
+class GenerateBaseFormSet(BaseFormSet):
+
     def generate(self):
         pkey = crypto.PKey()
         pkey.generate_key(crypto.TYPE_RSA, KEY_SIZE)
 
+        key_obj = SSLKey()
+
+        csr_list = [self._generate_csr(pkey, key_obj, data) for data in self.cleaned_data]
+
+        with transaction.atomic():
+            key = crypto.dump_privatekey(crypto.FILETYPE_PEM, pkey)
+            assert not os.path.exists(key_obj.key_path)
+            with creat(key_obj.key_path, 0000) as f:
+                f.write(key)
+
+            key_obj.save()
+            CertificateSigningRequest.objects.bulk_create(csr_list)
+
+        return key_obj
+
+    def _generate_csr(self, pkey, key_obj, cleaned_data):
         req = crypto.X509Req()
         req.set_pubkey(pkey)
 
         subject = req.get_subject()
-        for attr, value in self.cleaned_data.items():
+
+        for attr, value in cleaned_data.items():
             if value:
                 if attr == 'subjectAlternativeNames':
                     req.add_extensions([
@@ -99,24 +121,12 @@ class GenerateForm(forms.Form):
                 else:
                     setattr(subject, attr, value)
 
-        cn = self.cleaned_data['commonName']
-
-        csr_obj = CertificateSigningRequest.objects.create(domain=cn)
-
+        cn = cleaned_data['commonName']
         # Strip www. from the common name
         if cn.startswith(WWW):
             cn = cn[len(WWW):]
 
         req.sign(pkey, "sha256")
-
-        key = crypto.dump_privatekey(crypto.FILETYPE_PEM, pkey)
         csr = crypto.dump_certificate_request(crypto.FILETYPE_PEM, req)
-
-        assert not os.path.exists(csr_obj.key_path)
-
-        with creat(csr_obj.key_path, 0000) as f:
-            f.write(key)
-        with creat(csr_obj.csr_path, 0400) as f:
-            f.write(csr)
-
+        csr_obj = CertificateSigningRequest(domain=cn, key=key_obj, content=csr)
         return csr_obj

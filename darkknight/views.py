@@ -6,14 +6,27 @@ from django.views.generic.edit import FormView
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.utils.text import slugify
 from django.shortcuts import get_object_or_404
+from django.forms.formsets import formset_factory
 
-from darkknight.forms import GenerateForm
-from darkknight.models import CertificateSigningRequest, pk_signer
+from darkknight.forms import GenerateBaseFormSet, GenerateForm
+from darkknight.models import CertificateSigningRequest, pk_signer, SSLKey
 
 
 class GenerateView(FormView):
     template_name = 'darkknight/generate.html'
-    form_class = GenerateForm
+
+    def get_form_class(self):
+        try:
+            n = int(self.request.GET['n'])
+        except (ValueError, KeyError):
+            n = 1
+
+        return formset_factory(
+            GenerateForm,
+            formset=GenerateBaseFormSet,
+            extra=n,
+            max_num=n,
+        )
 
     def get_success_url(self):
         assert hasattr(self, 'instance')
@@ -27,30 +40,28 @@ class GenerateView(FormView):
         return super(GenerateView, self).form_valid(form)
 
 
-class CertificateSigningRequestMixin(SingleObjectMixin):
-    model = CertificateSigningRequest
+class DetailView(DetailView):
+    template_name = 'darkknight/detail.html'
+    queryset = SSLKey.objects.prefetch_related('csr_set')
     slug_field = 'uuid'
     slug_url_kwarg = 'uuid'
 
 
-class DetailView(CertificateSigningRequestMixin, DetailView):
-    template_name = 'darkknight/detail.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(DetailView, self).get_context_data(**kwargs)
-        context['csr'] = context['object'].get_csr_obj().get_subject()
-        return context
-
-
-class DownloadView(CertificateSigningRequestMixin, SingleObjectMixin, View):
+class DownloadView(SingleObjectMixin, View):
     http_method_names = ['get']
+    model = CertificateSigningRequest
+
+    def get_object(self):
+        return get_object_or_404(
+            self.get_queryset(),
+            key__uuid=self.kwargs['uuid'],
+            pk=self.kwargs['pk'],
+        )
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
 
-        csr = self.object.get_csr_text()
-
-        response = HttpResponse(csr, content_type='text/plain')
+        response = HttpResponse(self.object.content, content_type='text/plain')
 
         if 'download' in request.GET:
             content_disposition = 'attachement; filename="{}"'.format(
@@ -75,14 +86,25 @@ def get_csr_from_signed_pk(signed_pk):
     except BadSignature:
         raise Http404
 
-    return get_object_or_404(CertificateSigningRequest, pk=pk)
+    qs = CertificateSigningRequest.objects.all().select_related('key')
+    return get_object_or_404(qs, pk=pk)
 
 
 def redirect_to_detail(request, signed_pk):
     obj = get_csr_from_signed_pk(signed_pk)
-    return HttpResponseRedirect(reverse(detail, kwargs={'uuid': obj.uuid}))
+    return HttpResponseRedirect(reverse(detail, kwargs={'uuid': obj.key.uuid}))
 
 
 def redirect_to_download(request, signed_pk):
     obj = get_csr_from_signed_pk(signed_pk)
-    return HttpResponseRedirect(reverse(download, kwargs={'uuid': obj.uuid}))
+    return HttpResponseRedirect(reverse(download, kwargs={'uuid': obj.key.uuid, 'pk': obj.pk}))
+
+def redirect_to_default_download(request, uuid):
+    try:
+        obj = CertificateSigningRequest.objects.get(key__uuid=uuid)
+        url = reverse(download, kwargs={'uuid': obj.key.uuid, 'pk': obj.pk})
+        if request.GET:
+            url += '?' + request.GET.urlencode()
+        return HttpResponseRedirect(url)
+    except CertificateSigningRequest.MultipleObjectsReturned:
+        raise Http404("This key has many certificates")

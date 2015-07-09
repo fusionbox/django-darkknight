@@ -1,0 +1,24 @@
+{% load i18n %}
+
+<dt>{% trans "Country Name" %}
+<dd>{{ csr.countryName }}
+
+<dt>{% trans "State or Province" %}
+<dd>{{ csr.stateOrProvinceName }}
+
+<dt>{% trans "Locality Name" %}
+<dd>{{ csr.localityName }}
+
+<dt>{% trans "Organization Name" %}
+<dd>{{ csr.organizationName }}
+
+{% if csr.organizationalUnitName %}
+  <dt>{% trans "Organizational Unit" %}
+  <dd>{{ csr.organizationalUnitName }}
+{% endif %}
+
+<dt>{% trans "Common Name" %}
+<dd>{{ csr.commonName }}
+
+<dt>{% trans "Email Address" %}
+<dd>{{ csr.emailAddress }}

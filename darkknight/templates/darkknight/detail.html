@@ -1,38 +1,38 @@
 {% load i18n %}
+
 <ul>
-  <li><a href="{% url 'darkknight.views.download' object.uuid %}?download">{% trans "Download the CSR" %}</a></li>
-  <li><a href="{% url 'darkknight.views.download' object.uuid %}?view">{% trans "View the CSR" %}</a></li>
+  {% if object.csr_set.all|length == 1 %}
+    {% include "darkknight/_detail_csr_links.html" with key=object csr=object.csr_set.all.0 %}
+  {% endif %}
 </ul>
 
 <dl>
 
   <dt>{% trans "Key" %}
-  <dd><tt>{{ object.key }}</tt>
+  <dd><tt>{{ object.key_path }}</tt>
 
   <dt>{% blocktrans %}<tt>scp</tt> command{% endblocktrans %}
   <dd><tt>{% block command %}ssh {{ request.get_host }} sudo cat {{ object.key_path }} | sudo tee <em>filename</em>{% endblock %}</tt>
 
-  <dt>{% trans "Country Name" %}
-  <dd>{{ csr.countryName }}
-
-  <dt>{% trans "State or Province" %}
-  <dd>{{ csr.stateOrProvinceName }}
-
-  <dt>{% trans "Locality Name" %}
-  <dd>{{ csr.localityName }}
-
-  <dt>{% trans "Organization Name" %}
-  <dd>{{ csr.organizationName }}
-
-  {% if csr.organizationalUnitName %}
-    <dt>{% trans "Organizational Unit" %}
-    <dd>{{ csr.organizationalUnitName }}
+  {% if object.csr_set.all|length == 1 %}
+    {% include "darkknight/_detail_csr_details.html" with csr=object.csr_set.all.0.subject %}
   {% endif %}
 
-  <dt>{% trans "Common Name" %}
-  <dd>{{ csr.commonName }}
-
-  <dt>{% trans "Email Address" %}
-  <dd>{{ csr.emailAddress }}
-
 </dl>
+
+{% if object.csr_set.all|length > 1 %}
+  <p>This key has many certificates:</p>
+
+  {% for csr in object.csr_set.all %}
+    <section>
+      <ul>
+        {% include "darkknight/_detail_csr_links.html" with key=object %}
+      </ul>
+
+      <dl>
+        {% include "darkknight/_detail_csr_details.html" with csr=csr.subject %}
+      </dl>
+    </section>
+  {% endfor %}
+{% endif %}
+</body>

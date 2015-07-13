@@ -28,7 +28,7 @@ def create_associated_keys(state, schema_editor):
     Key = state.get_model('darkknight', 'sslkey')
     CSR = state.get_model('darkknight', 'certificatesigningrequest')
     for csr in CSR.objects.all():
-        Key.objects.create(uuid=csr.key_id)
+        Key.objects.create(uuid=csr.key)
 
 
 class Migration(migrations.Migration):
@@ -56,12 +56,12 @@ class Migration(migrations.Migration):
             old_name='uuid',
             new_name='key',
         ),
+        # This is a one way function because keys can have CSR, and uuid are unique on CSR
+        migrations.RunPython(create_associated_keys),
         migrations.AlterField(
             model_name='certificatesigningrequest',
             name='key',
             field=models.ForeignKey(related_name='csr_set', to='darkknight.SSLKey'),
             preserve_default=True,
         ),
-        # This is a one way function because keys can have CSR, and uuid are unique on CSR
-        migrations.RunPython(create_associated_keys),
     ]

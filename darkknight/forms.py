@@ -84,6 +84,10 @@ class GenerateForm(forms.Form):
 
 
 class GenerateBaseFormSet(BaseFormSet):
+    def __init__(self, *args, **kwargs):
+        super(GenerateBaseFormSet, self).__init__(*args, **kwargs)
+        for form in self.forms:
+            form.empty_permitted = False
 
     def generate(self):
         pkey = crypto.PKey()

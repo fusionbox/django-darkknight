@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import os
-import errno
 
 from django.db import models, migrations
 from django.conf import settings
+
 import darkknight.models
+
 
 def csr_path(csr):
     """
@@ -33,7 +34,7 @@ def create_associated_keys(state, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('darkknight', '0004_auto_20150708_1038'),
+        ('darkknight', '0003_auto_20141015_1712'),
     ]
 
     operations = [
@@ -58,7 +59,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='certificatesigningrequest',
             name='key',
-            field=models.ForeignKey(to='darkknight.SSLKey'),
+            field=models.ForeignKey(related_name='csr_set', to='darkknight.SSLKey'),
             preserve_default=True,
         ),
         # This is a one way function because keys can have CSR, and uuid are unique on CSR

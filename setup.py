@@ -17,7 +17,7 @@ setup(name='django-darkknight',
 
       url='http://github.com/fusionbox/django-darkknight',
 
-      packages=['darkknight'],
+      packages=['darkknight', 'darkknight_gpg'],
       install_requires=[
           'django-dotenv',
           'Django>=1.5',
@@ -25,6 +25,9 @@ setup(name='django-darkknight',
           'django-localflavor',
           'django-countries',
       ],
+      extras_require = {
+          'gpg': ['gnupg>=2.0.2,<3', 'django-apptemplates'],
+      },
 
       classifiers=[
           "Development Status :: 4 - Beta",

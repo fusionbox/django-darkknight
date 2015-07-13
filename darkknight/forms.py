@@ -10,6 +10,7 @@ from django_countries import countries
 
 from OpenSSL import crypto
 from darkknight.models import CertificateSigningRequest, SSLKey
+from darkknight.signals import key_created
 
 KEY_SIZE = 2048
 WWW = 'www.'
@@ -100,6 +101,7 @@ class GenerateBaseFormSet(BaseFormSet):
 
             key_obj.save()
             CertificateSigningRequest.objects.bulk_create(csr_list)
+            key_created.send(sender=self, instance=key_obj, private_key=key)
 
         return key_obj
 

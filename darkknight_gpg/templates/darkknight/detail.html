@@ -1,0 +1,10 @@
+{% extends "darkknight:darkknight/detail.html" %}
+
+{% load i18n %}
+
+{% block links %}
+  {{ block.super }}
+  {% if object.encryptedprivatekey %}
+    <li><a href="{{ object.encryptedprivatekey.get_absolute_url }}">{% trans "GPG-encrypted private key" %}</a></li>
+  {% endif %}
+{% endblock %}

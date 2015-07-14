@@ -25,7 +25,7 @@ class GenerateView(FormView):
             GenerateForm,
             formset=GenerateBaseFormSet,
             extra=n,
-            max_num=n,
+            max_num=50,
         )
 
     def get_success_url(self):
